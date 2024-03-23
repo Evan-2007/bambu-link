@@ -1,14 +1,13 @@
 {
-  "name": "bambu-node",
+  "name": "bambu-link",
   "version": "0.1.0",
-  "description": "",
+  "description": "A nodejs library for interfacing with the Bambu lab 3D printer",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsup",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "bambujs",
     "bambu",
     "bambulab",
     "p1s",
@@ -20,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Evan-2007/bambu-node"
+    "url": "https://github.com/Evan-2007/bambu-link"
   },
   "author": "Evan Cooper",
   "license": "MIT",

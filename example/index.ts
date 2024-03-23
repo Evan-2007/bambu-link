@@ -1,4 +1,4 @@
-import { bambuClient } from 'bambu-node'
+import { connect } from 'bambu-link'
 
 export async function main() {
     
@@ -6,7 +6,7 @@ export async function main() {
     const serial = '01P00A000000000' //This is a placeholder serial number. serial is found in the printer settings
     const hostname = '192.168.0.1' //Ip address of the printer. Ip addresses can change so it is recommended to set a static ip address for the printer
 
-    const client = bambuClient({
+    const client = connect({
         hostname, //Ip address of the printer. Ip addresses can change so it is recommended to set a static ip address for the printer
         token,
         serial,

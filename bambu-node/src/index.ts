@@ -1,1 +1,0 @@
-export { bambuClient } from './client'

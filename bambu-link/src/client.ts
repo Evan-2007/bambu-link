@@ -2,7 +2,7 @@ import mqqt from 'mqtt'
 import { actions, ActionsType } from './actions'
 import { BambuClientType } from './types'
 
-function bambuClient({hostname, port = 8883, token, serial}: {hostname: string, port?: number, token: string, serial: string}) {
+function connect({hostname, port = 8883, token, serial}: {hostname: string, port?: number, token: string, serial: string}) {
     const mqqtClient = mqqt.connect(`mqtts://${hostname}:${port}`, {
         username: "bblp",
         password: token,
@@ -41,5 +41,5 @@ function bambuClient({hostname, port = 8883, token, serial}: {hostname: string, 
     }
 }
 
-export {bambuClient}
+export {connect}
 
