@@ -16,14 +16,24 @@ jobs:
         with:
           node-version: '16' # or the version you're using
           registry-url: 'https://registry.npmjs.org/'
+          cache: 'pnpm'
 
-      - name: Install dependencies
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Change to project directory
+        run: cd bambujs
+
+      - name: Install dependencies with pnpm
         run: pnpm install
+        working-directory: ./bambujs
 
       - name: Build with tsup
-        run: pnpm tsup
+        run: pnpm exec tsup
+        working-directory: ./bambujs
 
       - name: Publish to npm
-        run: pnpm publish
+        run: pnpm publish --access public
+        working-directory: ./bambujs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
