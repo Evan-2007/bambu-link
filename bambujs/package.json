@@ -23,7 +23,7 @@
     "url": "git+"
   },
   "author": "Evan Cooper",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.29",
     "ts-node": "^10.9.2",
