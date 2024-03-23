@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Change to project directory
+        run: cd bambujs
+    
       - name: 'install pnpm'
         run: npm install -g pnpm
 
@@ -20,10 +23,6 @@ jobs:
           node-version: '16' # or the version you're using
           registry-url: 'https://registry.npmjs.org/'
           cache: 'pnpm'
-
-
-      - name: Change to project directory
-        run: cd bambujs
 
       - name: Install dependencies with pnpm
         run: pnpm install
