@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: 'install pnpm'
+        run: pnpm install
+
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -18,8 +21,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org/'
           cache: 'pnpm'
 
-      - name: Install pnpm
-        run: npm install -g pnpm
 
       - name: Change to project directory
         run: cd bambujs
