@@ -22,14 +22,14 @@ jobs:
 
       - name: Install dependencies with pnpm
         run: pnpm install
-        working-directory: ./bambujs
+        working-directory: ./bambu-node
 
       - name: Build with tsup
         run: pnpm exec tsup
-        working-directory: ./bambujs
+        working-directory: ./bambu-node
 
       - name: Publish to npm
         run: pnpm publish --access public
-        working-directory: ./bambujs
+        working-directory: ./bambu-node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
