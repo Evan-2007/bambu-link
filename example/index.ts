@@ -1,4 +1,4 @@
-import { bambuClient } from 'bambujs'
+import { bambuClient } from 'bambu-node'
 
 export async function main() {
     

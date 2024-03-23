@@ -1,4 +1,4 @@
-# Bambu.js
+# bambu-node
 A node module for communicating with bambulab printers. Currently still a work in progress.
 Only tested on p1s
 
@@ -6,18 +6,18 @@ Only tested on p1s
 \
 Install the npm package 
 ```bash
-npm i bambujs
+npm i bambu-node
 # or
-yarn add bambujs
+yarn add bambu-node
 # or
-pnpm add bambujs
+pnpm add bambu-node
 # or
-bun add bambujs
+bun add bambu-node
 ```
 \
 Then import bambuclient
 ``` javascript
-import { bambuClient } from 'bambujs'
+import { bambuClient } from 'bambu-node'
 ```
 \
 Connect to the printer
@@ -54,7 +54,7 @@ Alot more actions will come soon
 Replace token, serial, hostname with information from your printer
 
 ``` javascript
-import { bambuClient } from 'bambujs'
+import { bambuClient } from 'bambu-node'
 
 export async function main() {
     
