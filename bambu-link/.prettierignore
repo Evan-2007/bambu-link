@@ -1,0 +1,10 @@
+dist 
+pnpm-lock.yaml
+package.json
+node_modules
+.npmignore
+.gitignore
+.vscode
+tsconfig.json
+tsconfig.build.json
+tsup.config.ts

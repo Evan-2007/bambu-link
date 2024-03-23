@@ -1,1 +1,1 @@
-export { connect } from './client'
+export { connect } from "./client";
