@@ -1,0 +1,36 @@
+{
+  "name": "bambujs",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bambujs",
+    "bambu",
+    "bambulab",
+    "p1s",
+    "p1p",
+    "x1c",
+    "3d printing",
+    "3d printer",
+    "3d print"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+"
+  },
+  "author": "Evan Cooper",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.29",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "mqtt": "^5.5.0"
+  }
+}
