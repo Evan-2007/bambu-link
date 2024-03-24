@@ -1,6 +1,15 @@
 import mqqt from "mqtt";
-import { actions, ActionsType } from "./actions";
-import { BambuClientType } from "./types";
+import {
+  systemActions,
+  systemActionsType,
+  gcodeActions,
+  gcodeActionsType,
+} from "./actions/index";
+
+interface ActionsType {
+  system: systemActionsType;
+  gcode: gcodeActionsType;
+}
 
 function connect({
   hostname,
@@ -26,19 +35,22 @@ function connect({
     mqqtClient.subscribe(`device/${serial}/report`, (err: any) => {
       if (err) {
         console.log("error subscribing", err);
+        process.exit(1);
       } else {
-        console.log("Getting status");
         connected = true;
       }
     });
   });
 
   function useActions(): Promise<ActionsType> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const checkConnected = setInterval(() => {
         if (connected) {
           clearInterval(checkConnected);
-          resolve(actions(mqqtClient, serial) as ActionsType); // Assuming `actions` returns the correct object.
+          resolve({
+            system: systemActions(mqqtClient, serial),
+            gcode: gcodeActions(mqqtClient, serial),
+          });
         }
       }, 100);
     });
