@@ -1,11 +1,4 @@
-export interface ActionsType {
-  pushAll: () => void;
-  chamberLightOn: () => void;
-  chamberLightOff: () => void;
-  getVersion: () => void;
-}
-
-export function actions(mqqtClient: any, serial: string) {
+export function systemActions(mqqtClient: any, serial: string) {
   const PUSH_ALL = { pushing: { sequence_id: "0", command: "pushall" } };
   const GET_VERSION = { info: { sequence_id: "0", command: "get_version" } };
   const CHAMBER_LIGHT_OFF = {
