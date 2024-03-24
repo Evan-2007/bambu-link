@@ -2,7 +2,7 @@
   "name": "bambu-link",
   "version": "0.2.0",
   "description": "A nodejs library for interfacing with the Bambu lab 3D printer",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsup",
     "test": "echo \"Error: no test specified\" && exit 1",
