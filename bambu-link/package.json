@@ -1,6 +1,6 @@
 {
   "name": "bambu-link",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A nodejs library for interfacing with the Bambu lab 3D printer",
   "main": "dist/index.js",
   "scripts": {
