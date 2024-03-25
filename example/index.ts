@@ -30,20 +30,33 @@ export async function main() {
             currentTemp = json.print.bed_temper //set the current temp to the bed temp if it is defined
         }
 
+
+
+        if (json.print?.command ==='gcode_line') {
+        //    console.log(json)
+        }
+
+        if (json.print?.hms !== undefined) {
+            console.log(json.print.hms)
+        }
+
     })
 
     const actions = await client.actions; //wait for connection to be established before sending commands
 
+
     actions.system.pushAll() //request initial printer state
+    actions.gcode.home() //home the printer
+    actions.gcode.move('X', 20.0) //move the x axis 10mm
 
-    const temp = 60
-    actions.gcode.tempControl('BED', temp) //set the bed temp to 60 degrees
+//     const temp = 60
+//     actions.gcode.tempControl('BED', temp) //set the bed temp to 60 degrees
 
-    while (currentTemp < temp) { //wait untill the bed temp reaches 60 degrees
-        console.log('Current Temp:', currentTemp)
-        await new Promise(resolve => setTimeout(resolve, 1000)) //wait for 1 second untill checking the temp again
-    }
-    console.log('Reached Temp:', currentTemp)
+//     while (currentTemp < temp) { //wait untill the bed temp reaches 60 degrees
+//         console.log('Current Temp:', currentTemp)
+//         await new Promise(resolve => setTimeout(resolve, 1000)) //wait for 1 second untill checking the temp again
+//     }
+//     console.log('Reached Temp:', currentTemp)
 
 }
 

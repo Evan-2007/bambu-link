@@ -63,8 +63,10 @@ System actions can be called using ```actions.system.actionName()```
 ## Gcode
 Gcode actions can be called using ```actions.gcode.actionName()```
 ### Avalable gcode actions
-- ```fanSpeed(fan, speed)``` fan can be CHAMBER, PART, or AUX. speed can be any number between 0 and 225
+- ```fanSpeed(fan, speed)``` fan can be CHAMBER, PART, or AUX. speed can be any number between 0 and 255
 - ```tempControl(tool, temp)``` tool can be BED or EXTRUDER. temp is the target temperature in celsius
+- ```home()``` locates the position of the toolhead and prevents it from trying to move to far.
+- ```move(axis, distance)``` axis can be X Y or Z. distance is how far you want to move <span style="color:red">WARNING: using move before home can cause the printer to try and move to far and could cause wear</span>
 
 ## Example
 This example connects to the printer, turnes the light on and, heats the bed to 60 and then waits for it to reach that temp

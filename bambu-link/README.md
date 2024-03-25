@@ -1,4 +1,4 @@
-# bambu-link
+[# bambu-link
 
 A node module for communicating with bambulab printers. Currently still a work in progress.
 Only tested on p1s
@@ -144,3 +144,5 @@ export async function main() {
 main()
 
 ```
+
+](../README.md)

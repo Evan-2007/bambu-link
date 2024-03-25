@@ -25,6 +25,7 @@ export function systemActions(mqqtClient: any, serial: string) {
       interval_time: 0,
     },
   };
+  const UNLOAD = {};
 
   return {
     pushAll: () => {
