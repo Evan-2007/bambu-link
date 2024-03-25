@@ -1,6 +1,6 @@
 {
   "name": "bambu-link",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A nodejs library for interfacing with a Bambu lab 3D printer",
   "main": "dist/index.js",
   "scripts": {
@@ -29,10 +29,10 @@
     "@types/node": "^20.11.29",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "prettier": "^3.2.5"
   },
   "dependencies": {
-    "mqtt": "^5.5.0",
-    "prettier": "^3.2.5"
+    "mqtt": "^5.5.0"
   }
 }
