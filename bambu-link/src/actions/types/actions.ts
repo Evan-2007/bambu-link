@@ -13,4 +13,10 @@ export interface fan {
 export interface gcodeActionsType {
   fanSpeed: (fan: "PART" | "AUX" | "CHAMBER", speed: number) => void;
   tempControl: (tool: "BED" | "EXTRUDER", temp: number) => void;
+  move: (axis: "X" | "Y" | "Z", distance: number) => void;
+  home: () => void;
+}
+
+export interface amsActionsType {
+  unload: () => void;
 }

@@ -4,6 +4,8 @@ import {
   systemActionsType,
   gcodeActions,
   gcodeActionsType,
+  amsActions,
+  amsActionsType,
 } from "./actions/index";
 
 interface ActionsType {
