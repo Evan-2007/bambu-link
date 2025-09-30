@@ -32,7 +32,7 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "mqtt": "^5.5.0",
+    "mqtt": "^5.14.1",
     "prettier": "^3.2.5"
   }
 }
