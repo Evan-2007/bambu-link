@@ -1,2 +1,8 @@
-node_modules
-.env
+/node_modules
+
+# Ignore test-related files
+/coverage.data
+/coverage/
+
+# Build files
+/dist
