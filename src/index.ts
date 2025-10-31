@@ -4,7 +4,6 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export {BambuLink } from "./client";
-export { Message as MessageType } from "./types/printerResponse";
 
 
 
@@ -35,11 +34,11 @@ declare const module: any;
         });
 
         client.on('stateUpdate', (state) => {
-          //console.log('State updated:', state);
+          console.log('State updated:', state);
         });
 
         client.on('state', (state) => {
-          console.log('State changed:', state);
+          //console.log('State changed:', state);
         });
       })();
     }

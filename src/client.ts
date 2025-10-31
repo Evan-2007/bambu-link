@@ -74,7 +74,7 @@ export class BambuLink extends EventEmitter implements Commands {
   }
 
   private async initialMessage() {
-    const message = await this.mqttClient?.sendCommand(JSON.stringify({ pushing: { sequence_id: this.sequenceIdCounter, command: "pushall", version: 1, push_target: 1 } }), this.sequenceIdCounter).catch((err) => {
+    const message = await this.mqttClient?.sendCommand(JSON.stringify({ pushing: { sequence_id: this.sequenceIdCounter, command: "pushall", version: 1, push_target: 1 } }), this.sequenceIdCounter, false).catch((err) => {
       console.error("Error during initial message:", err);
       return
     });

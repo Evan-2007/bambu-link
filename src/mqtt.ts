@@ -147,13 +147,21 @@ export class MqttStreamClient extends EventEmitter {
    * @param sequenceId The sequence ID for this command.
    * @returns A Promise that resolves with the response or rejects on timeout.
    */
-  public sendCommand(command: string, sequenceId: number): Promise<any> {
+  public sendCommand(command: string, sequenceId: number, awaitResponse: boolean): Promise<any> {
     if (!this.client || !this.client.connected) {
       return Promise.reject(new Error('MQTT client not connected.'));
     }
     console.log(`Sending command: ${command} with sequence ID: ${sequenceId}`);
 
     const sequenceNumber = sequenceId;
+    if (!awaitResponse) {
+      this.client.publish(this.dataUpdateTopic, command, (err) => {
+        if (err) {
+          console.error('Failed to publish command:', err);
+        }
+      });
+      return Promise.resolve(null);
+    }
 
     return new Promise((resolve, reject) => {
       this.pendingCommands.set(sequenceNumber, resolve);
