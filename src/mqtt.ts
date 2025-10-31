@@ -2,23 +2,9 @@ import { connect, MqttClient, IClientOptions } from 'mqtt';
 import { EventEmitter } from 'events';
 
 
-interface IMqttCommand {
-  action: string;
-  payload: any;
-}
-
-// Interface for the expected response
-// The 'sequenceNumber' is critical
-interface IMqttResponse {
-  sequenceNumber: number;
-  success: boolean;
-  data?: any;
-  error?: string;
-}
-
 // Type for the 'resolve' function of a Promise,
 // which we will store to await a response.
-type PendingCommandResolver = (response: IMqttResponse) => void;
+type PendingCommandResolver = (response: any) => void;
 
 
 /**
@@ -34,10 +20,9 @@ export class MqttStreamClient extends EventEmitter {
   private brokerUrl: string;
   private clientOptions: IClientOptions;
 
-  // Topics
+
   private dataUpdateTopic: string;
-  private commandTopic: string;
-  // Command-Response tracking
+
   private sequenceCounter = 0;
   private pendingCommands = new Map<number, PendingCommandResolver>();
   private commandTimeoutMs: number;
@@ -45,7 +30,6 @@ export class MqttStreamClient extends EventEmitter {
   constructor(
     brokerUrl: string,
     dataUpdateTopic: string,
-    commandTopic: string,
     options: IClientOptions = {},
     commandTimeoutMs: number = 10000 // 10-second timeout
   ) {
@@ -53,15 +37,18 @@ export class MqttStreamClient extends EventEmitter {
     this.brokerUrl = brokerUrl;
     this.clientOptions = options;
     this.dataUpdateTopic = dataUpdateTopic;
-    this.commandTopic = commandTopic;
     this.commandTimeoutMs = commandTimeoutMs;
   }
 
   /**
-   * Connects to the MQTT broker and sets up listeners.
+   * Connect to the MQTT broker and set up listeners.
    */
   public connect(): void {
     this.client = connect(this.brokerUrl, this.clientOptions);
+
+    this.client.on('error', (err) => {
+      this.emit('error', err);
+    });
 
     // On successful connection
     this.client.on('connect', () => {
@@ -76,6 +63,7 @@ export class MqttStreamClient extends EventEmitter {
       });
 
 
+      console.log(`Subscribed to topic: ${this.dataUpdateTopic}`);
       this.emit('connect');
     });
 
@@ -97,7 +85,7 @@ export class MqttStreamClient extends EventEmitter {
   }
 
   /**
-   * Disconnects the client.
+   * Disconnect the client.
    */
   public disconnect(): void {
     this.client?.end();
@@ -109,6 +97,7 @@ export class MqttStreamClient extends EventEmitter {
   private handleMessage(topic: string, payload: Buffer): void {
     const messageStr = payload.toString();
     let message: any;
+    //console.log(`Received message on topic ${topic}: ${messageStr}`);
 
     try {
       message = JSON.parse(messageStr);
@@ -118,8 +107,9 @@ export class MqttStreamClient extends EventEmitter {
     }
 
     // Check if it's a command response
-    if (message.sequenceNumber <= this.sequenceCounter) {
-      this.handleCommandResponse(message as IMqttResponse);
+    if (message.print?.upgrade_state?.sequence_id <= this.sequenceCounter) {
+      //console.log(message.print.upgrade_state);
+      this.handleCommandResponse(message);
     }
     else {
       /**
@@ -136,36 +126,34 @@ export class MqttStreamClient extends EventEmitter {
   /**
    * Handles messages on the response topic.
    */
-  private handleCommandResponse(response: IMqttResponse): void {
-    const seq = response.sequenceNumber;
+  private handleCommandResponse(response: any): void {
+    console.log(this.pendingCommands)
+    const seq = response.print?.upgrade_state?.sequence_id;
 
     if (seq && this.pendingCommands.has(seq)) {
       const resolver = this.pendingCommands.get(seq);
       resolver?.(response); 
-      this.pendingCommands.delete(seq); // Clean up
+      this.pendingCommands.delete(seq);
     } else {
       console.warn(`Received response with unknown sequence: ${seq}`);
+      // emit response as a normal data message
+      this.emit('data', { topic: this.dataUpdateTopic, message: response });
     }
   }
 
   /**
    * Sends a command and waits for a response with a matching sequence number.
-   *
    * @param command The command object to send.
+   * @param sequenceId The sequence ID for this command.
    * @returns A Promise that resolves with the response or rejects on timeout.
    */
-  public sendCommand(command: IMqttCommand): Promise<IMqttResponse> {
+  public sendCommand(command: string, sequenceId: number): Promise<any> {
     if (!this.client || !this.client.connected) {
       return Promise.reject(new Error('MQTT client not connected.'));
     }
+    console.log(`Sending command: ${command} with sequence ID: ${sequenceId}`);
 
-    this.sequenceCounter += 1;
-    const sequenceNumber = this.sequenceCounter;
-
-    const message = {
-      ...command,
-      sequenceNumber,
-    };
+    const sequenceNumber = sequenceId;
 
     return new Promise((resolve, reject) => {
       this.pendingCommands.set(sequenceNumber, resolve);
@@ -175,7 +163,7 @@ export class MqttStreamClient extends EventEmitter {
         reject(new Error(`Command timeout for sequence ${sequenceNumber}`));
       }, this.commandTimeoutMs);
 
-      this.client?.publish(this.commandTopic, JSON.stringify(message), (err) => {
+      this.client?.publish(this.dataUpdateTopic, command, (err) => {
         if (err) {
           this.pendingCommands.delete(sequenceNumber);
           clearTimeout(timeout);
