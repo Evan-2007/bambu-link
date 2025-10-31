@@ -1,10 +1,11 @@
 # bambu-link
-A node module for communicating with bambulab printers. Currently still a work in progress.
-Only tested on p1s
+A Node.js module for communicating with Bambu Lab 3D printers via MQTT. Currently still a work in progress.
+
+**Tested on:** P1S
 
 ## Installation
-\
-Install the npm package 
+
+Install the npm package:
 ```bash
 npm i bambu-link
 # or
@@ -14,113 +15,172 @@ pnpm add bambu-link
 # or
 bun add bambu-link
 ```
-\
-Then import bambuclient
-``` javascript
-import { connect } from 'bambu-link'
-```
-\
-Connect to the printer
-``` javascript
-    const client = connect({
-        hostname,
-        token,
-        serial,
-        port: 8883
-    })
-```
-\
-Read messages using 
-``` javascript
-    client.service.on('message', (topic, message) => {
-        console.log(message.toString())
-    })
-```
-\
-Sent messages to the printer using
-``` javascript
-    const actions = await client.actions;
 
-    actions.system.pushAll() //Lists current status of printer
-    actions.system.chamberLightOff() //Turns off chamber light
-    actions.system.chamberLightOn() //Turns on chamber light
-    actions.gcode.fanSpeed(AUX, 255) //sets the aux fan to max
+## Quick Start
+
+Import the BambuLink client:
+```javascript
+import { BambuLink } from 'bambu-link';
 ```
 
-\
-## Actions
-first wait for for connection to the printer with 
-``` javascript 
-const actions = await client.actions;
+Create a new client instance:
+```javascript
+const client = new BambuLink(
+    accessToken,    // Access token from printer network settings
+    host,           // IP address of the printer
+    0,              // Sequence start (0 for single client)
+    8883,           // Port (default: 8883)
+    serial          // Serial number from printer settings
+);
 ```
 
-## System
-System actions can be called using ```actions.system.actionName()```
-### Avalable system actions
-- ```pushAll()``` Returns current information about the printer
-- ```getVersion()``` Returnes information about the printer version
-- ```chamberLightOn()```, ```chamberLightOff()``` Turnes on and off the chamber light
-## Gcode
-Gcode actions can be called using ```actions.gcode.actionName()```
-### Avalable gcode actions
-- ```fanSpeed(fan, speed)``` fan can be CHAMBER, PART, or AUX. speed can be any number between 0 and 255
-- ```tempControl(tool, temp)``` tool can be BED or EXTRUDER. temp is the target temperature in celsius
-- ```home()``` locates the position of the toolhead and prevents it from trying to move to far.
-- ```move(axis, distance)``` axis can be X Y or Z. distance is how far you want to move <span style="color:red">WARNING: using move before home can cause the printer to try and move to far and could cause wear</span>
+Connect to the printer:
+```javascript
+client.connect();
+```
+
+## Events
+
+The BambuLink client uses an event-based architecture. Listen for events using the `.on()` method:
+
+### `connect`
+Emitted when successfully connected to the printer.
+```javascript
+client.on('connect', () => {
+    console.log('Connected to printer');
+});
+```
+
+### `data`
+Emitted for all incoming messages from the printer.
+```javascript
+client.on('data', (topic, message) => {
+    console.log('Received data:', message);
+});
+```
+
+### `state`
+Emitted when the printer state is updated with the full current state.
+```javascript
+client.on('state', (state) => {
+    console.log('Current state:', state);
+});
+```
+
+### `stateUpdate`
+Emitted with only the changed parts of the state.
+```javascript
+client.on('stateUpdate', (patch, previousState) => {
+    console.log('State changes:', patch);
+});
+```
+
+### `error`
+Emitted when an error occurs.
+```javascript
+client.on('error', (err) => {
+    console.error('Error:', err);
+});
+```
+
+## State Management
+
+The client automatically tracks and validates printer state using Zod schemas. Access the current state at any time:
+
+```javascript
+const state = client.getFullState();
+```
+
+The `PrinterState` object includes:
+- `temps` - Temperatures (nozzle, bed, chamber)
+- `fans` - Fan speeds (part, chamber, aux, heatbreak)
+- `lights` - Light states (chamber, work)
+- `job` - Current job info (stage, progress, remaining time, file)
+- `ams` - AMS (Automatic Material System) state and trays
+- `ipcam` - Camera settings
+- `upgrade` - Firmware update status
+- `network` - Network information
+- And more...
+
+## Sending Commands
+
+<!-- TODO: Document command API once implemented -->
+TODO
 
 ## Example
-This example connects to the printer, turnes the light on and, heats the bed to 60 and then waits for it to reach that temp
 
-``` javascript
-import { connect, MessageType } from 'bambu-link' 
-import 'dotenv/config'
+Basic example connecting to the printer and monitoring temperature:
 
-export async function main() {
-    if (typeof process.env.TOKEN === 'undefined' || typeof process.env.SERIAL === 'undefined' || typeof process.env.HOSTNAME === 'undefined') {
-        console.error('Please set the TOEKN, SERIAL, and HOSTNAME environment variables')
-        process.exit(1)
-    }
+```javascript
+import { BambuLink } from 'bambu-link';
+import 'dotenv/config';
 
-    const token = process.env.TOKEN //token is found in the printer network settings
-    const serial = process.env.SERIAL //serial is found in the printer settings
-    const hostname = process.env.HOSTNAME //Ip address of the printer. Ip addresses can change so it is recommended to set a static ip address for the printer
-
-    const client = connect({
-        hostname,
-        token,
-        serial,
-        port: 8883 //Port number for the printer. Default is 8883 and should not be chnaged unless nessesary
-    })
-
-
-    let currentTemp = 0
-    client.service.on('message', (topic, message) => {
-
-        const messageString  = message.toString(); //convert the message to a string
-        const json: MessageType = JSON.parse(messageString) //parse the message to a json object and type it as MessageType
-        console.log(json) //log the json object to the console
-
-        if(typeof json.print?.bed_temper !== "undefined") {
-            currentTemp = json.print.bed_temper //set the current temp to the bed temp if it is defined
-        }
-
-    })
-
-    const actions = await client.actions; //wait for connection to be established before sending commands
-
-    actions.system.pushAll() //request initial printer state
-
-    const temp = 60
-    actions.gcode.tempControl('BED', temp) //set the bed temp to 60 degrees
-
-    while (currentTemp < temp) { //wait untill the bed temp reaches 60 degrees
-        console.log('Current Temp:', currentTemp)
-        await new Promise(resolve => setTimeout(resolve, 1000)) //wait for 1 second untill checking the temp again
-    }
-    console.log('Reached Temp:', currentTemp)
-
+if (!process.env.access_token || !process.env.host || !process.env.serial) {
+    console.error('Please set the access_token, host, and serial environment variables');
+    process.exit(1);
 }
 
-main()
+const client = new BambuLink(
+    process.env.access_token,  // Token from printer network settings
+    process.env.host,          // IP address (recommend using static IP)
+    0,                         // Sequence start
+    8883,                      // Port (default: 8883)
+    process.env.serial         // Serial from printer settings
+);
 
+client.on('connect', () => {
+    console.log('Connected to printer via MQTT');
+});
+
+client.on('error', (err) => {
+    console.error('Error:', err);
+});
+
+client.on('stateUpdate', (patch) => {
+    if (patch.temps) {
+        console.log('Temperature update:', patch.temps);
+    }
+});
+
+client.on('state', (state) => {
+    // Access full state
+    console.log('Bed temp:', state.temps.bed);
+    console.log('Nozzle temp:', state.temps.nozzle);
+
+    if (state.job?.percent) {
+        console.log('Job progress:', state.job.percent + '%');
+    }
+});
+
+client.connect();
 ```
+
+## API Reference
+
+<!-- TODO: Add comprehensive API documentation -->
+
+### Constructor
+```javascript
+new BambuLink(accessToken, host, sequenceStart, port, serial)
+```
+
+### Methods
+- `connect()` - Connect to the printer
+- `disconnect()` - Disconnect from the printer
+- `getFullState()` - Get the current printer state
+- `getMqttClient()` - Get the underlying MQTT client
+
+### Events
+- `connect` - Connected to printer
+- `data` - Raw data received
+- `state` - Full state update
+- `stateUpdate` - Partial state update (delta)
+- `error` - Error occurred
+
+## Contributing
+
+This project is still in active development. Contributions are welcome!
+
+## License
+
+MIT
