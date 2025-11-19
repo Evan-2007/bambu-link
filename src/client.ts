@@ -1,18 +1,11 @@
 import { Commands } from "./types/link";
-import { error } from "console";
-import { MqttStreamClient } from "./mqtt";
-import { EventEmitter } from "events";
+import {MqttStreamClient} from "./mqtt";
+import { EventEmitter } from 'events';
 import {
   normalizeRawStatus,
-  mergeDeep,
-  updateAtPath,
-  select,
-  DeepPartial,
+  DeepPartial
 } from "./state";
 import { PrinterState } from "./types/printerState";
-import { version } from "os";
-import { en, no } from "zod/v4/locales";
-
 export class BambuLink extends EventEmitter implements Commands {
   private accessToken: string;
   public sequenceNumber: number;
@@ -31,7 +24,7 @@ export class BambuLink extends EventEmitter implements Commands {
    * Creates an instance of the BambuLink class.
    * @param accessToken The access token for authentication.
    * @param host The host address of the printer.
-   * @param sequenceStart The start sequence number for the connection. Defaults to 0. Usefull if multiple clients are connected.
+   * @param sequenceStart The start sequence number for the connection. Defaults to 0. Useful if multiple clients are connected.
    * @param port The port number for the connection. Defaults to 8883.
    * @param serial The serial number of the printer.
    */
@@ -257,24 +250,36 @@ export class BambuLink extends EventEmitter implements Commands {
     );
   }
 
-  /**
-   * Sets the LED mode.
-   * @param mode "off", "on", or "flashing"
-   * @param node 'chamber_light' | 'work_light'
-   * @param flashing Flashing parameters if mode is "flashing"
-   * @returns A Promise that resolves with the response or rejects on timeout.
-   */
-  public ledSet(
-    mode: "off" | "on" | "flashing",
-    node: "chamber_light" | "work_light",
-    flashing: {
-      led_on_time: number;
-      led_off_time: number;
-      loop_times: number;
-      interval: number;
-    } = { led_on_time: 500, led_off_time: 500, loop_times: 1, interval: 1000 },
-  ): Promise<any> {
-    const sequenceId = ++this.sequenceIdCounter;
+    public setFanSpeed(speed: number, fan: 'AUX' | 'CHAMBER' | 'PART'): Promise<any> {
+      if (speed < 0 || speed > 255) {
+        return Promise.reject(new Error("Fan speed must be between 0 and 255."));
+      }
+      enum Fan {
+        AUX = 2,
+        CHAMBER = 3,
+        PART = 1,
+      }
+      return this.printGcode(`M106 P${Fan[fan]} S${speed}\n`);
+    }
+
+    /**
+     * Moves the specified axis by the given distance.
+     * WARNING: This command could bypass endstops.
+     * @param axis 'X', 'Y', or 'Z'
+     * @param distance Distance to move in millimeters.
+     * @param feedrate Feedrate in mm/min. Default is 9000.
+     * @returns A Promise that resolves with the response or rejects on timeout.
+     */
+    public move(axis: 'X' | 'Y' | 'Z', distance: number, feedrate: number = 9000): Promise<any> {
+      // if (this.state && axis === 'E' && this.state.temps.nozzle < 180) {
+      //   console.warn(new Error("Extruder should be heated to >180C before moving E axis."));
+      // }
+      // if (!this.state && axis === 'E') {
+      //   console.warn('Make sure extruder is heated to >180C before moving E axis.');
+      // }
+      return this.printGcode(`M211 S ; save soft endstop flag\nM211 X1 Y1 Z1 ; turn on soft endstop\nM1002 push_ref_mode\nG91\nG1 ${axis}${distance} F${feedrate}\nM1002 pop_ref_mode\nM211 R ; restore soft endstop flag\n`);
+    }
+
 
     const payload = {
       system: {
