@@ -211,7 +211,7 @@ export class BambuLink extends EventEmitter implements Commands {
 
     /**
      * Moves the specified axis by the given distance.
-     * WARNING: This command could bypasse endstops.
+     * WARNING: This command could bypass endstops.
      * @param axis 'X', 'Y', or 'Z'
      * @param distance Distance to move in millimeters.
      * @param feedrate Feedrate in mm/min. Default is 9000.
