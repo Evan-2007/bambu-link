@@ -1,9 +1,8 @@
 name: Build and Publish
 
 on:
-  push:
-    branches:
-      - main # or your default branch
+  release:
+    types: [published]
 
 jobs:
   build-and-publish:
