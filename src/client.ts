@@ -4,9 +4,6 @@ import {MqttStreamClient} from "./mqtt";
 import { EventEmitter } from 'events';
 import {
   normalizeRawStatus,
-  mergeDeep,
-  updateAtPath,
-  select,
   DeepPartial
 } from "./state";
 import { PrinterState } from "./types/printerState";
