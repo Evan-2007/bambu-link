@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { PrinterState, Temperatures, FanSpeeds, Lights, Ipcam, Upgrade, AmsTray, AmsState } from "./types/printerState";
+import {
+  PrinterState,
+  Temperatures,
+  FanSpeeds,
+  Lights,
+  Ipcam,
+  Upgrade,
+  AmsTray,
+  AmsState,
+} from "./types/printerState";
 
 const zNum = z.preprocess((v) => {
   if (v === "" || v == null) return undefined;
@@ -8,7 +17,10 @@ const zNum = z.preprocess((v) => {
   return v;
 }, z.number().optional());
 
-const zStr = z.preprocess((v) => (v == null ? undefined : String(v)), z.string().optional());
+const zStr = z.preprocess(
+  (v) => (v == null ? undefined : String(v)),
+  z.string().optional(),
+);
 
 const RawSchema = z.object({
   command: zStr,
@@ -54,10 +66,15 @@ export function normalizeRawStatus(input: unknown): PrinterState {
   const ipcam: Ipcam | undefined = ipcamRaw
     ? {
         enabled: str(ipcamRaw.ipcam_dev, "0") === "1",
-        record: (strU(ipcamRaw.ipcam_record) ?? "disable") as "enable" | "disable",
-        timelapse: (strU(ipcamRaw.timelapse) ?? "disable") as "enable" | "disable",
+        record: (strU(ipcamRaw.ipcam_record) ?? "disable") as
+          | "enable"
+          | "disable",
+        timelapse: (strU(ipcamRaw.timelapse) ?? "disable") as
+          | "enable"
+          | "disable",
         resolution: emptyToUndef(strU(ipcamRaw.resolution)),
-        tutkServer: (strU(ipcamRaw.tutk_server) as "enable" | "disable") ?? undefined,
+        tutkServer:
+          (strU(ipcamRaw.tutk_server) as "enable" | "disable") ?? undefined,
         modeBits: numU(ipcamRaw.mode_bits),
       }
     : undefined;
@@ -101,14 +118,25 @@ export function normalizeRawStatus(input: unknown): PrinterState {
 
   const ams: AmsState | undefined =
     Object.keys(trays).length > 0 ||
-    hasAny(amsRaw, ["tray_now", "tray_pre", "ams_exist_bits", "tray_is_bbl_bits", "version"])
+    hasAny(amsRaw, [
+      "tray_now",
+      "tray_pre",
+      "ams_exist_bits",
+      "tray_is_bbl_bits",
+      "version",
+    ])
       ? {
           trays,
           trayNow: numU(amsRaw.tray_now),
           trayPre: numU(amsRaw.tray_pre),
-          existBits: strU(amsRaw.ams_exist_bits) ?? strU(get(["print", "ams_exist_bits"])) ?? null,
+          existBits:
+            strU(amsRaw.ams_exist_bits) ??
+            strU(get(["print", "ams_exist_bits"])) ??
+            null,
           isBblBits:
-            strU(amsRaw.tray_is_bbl_bits) ?? strU(get(["print", "tray_is_bbl_bits"])) ?? null,
+            strU(amsRaw.tray_is_bbl_bits) ??
+            strU(get(["print", "tray_is_bbl_bits"])) ??
+            null,
           version: numU(amsRaw.version) ?? numU(get(["print", "version"])),
         }
       : undefined;
@@ -144,8 +172,9 @@ export function normalizeRawStatus(input: unknown): PrinterState {
     gcodeState: strU(get(["print", "gcode_state"])),
 
     job: {
-
-      stage: strU(get(["print", "mc_print_stage"])) ?? numU(get(["print", "mc_print_stage"])),
+      stage:
+        strU(get(["print", "mc_print_stage"])) ??
+        numU(get(["print", "mc_print_stage"])),
       subStage: numU(get(["print", "mc_print_sub_stage"])),
       percent: numU(get(["print", "mc_percent"])),
       remainingSeconds: numU(get(["print", "mc_remaining_time"])),
@@ -178,12 +207,20 @@ export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends Record<string, any> ? DeepPartial<T[K]> : T[K];
 };
 
-export function mergeDeep<T extends Record<string, any>>(base: T, patch: DeepPartial<T>): T {
+export function mergeDeep<T extends Record<string, any>>(
+  base: T,
+  patch: DeepPartial<T>,
+): T {
   if (!isObject(base) || !isObject(patch)) return { ...(patch as any) } as T;
   const out: any = Array.isArray(base) ? [...base] : { ...base };
   for (const [k, v] of Object.entries(patch)) {
-    if (v === undefined) continue; 
-    if (isObject(v) && isObject(out[k]) && !Array.isArray(v) && !Array.isArray(out[k])) {
+    if (v === undefined) continue;
+    if (
+      isObject(v) &&
+      isObject(out[k]) &&
+      !Array.isArray(v) &&
+      !Array.isArray(out[k])
+    ) {
       out[k] = mergeDeep(out[k], v as any);
     } else {
       out[k] = v;
@@ -192,15 +229,24 @@ export function mergeDeep<T extends Record<string, any>>(base: T, patch: DeepPar
   return out as T;
 }
 
-export function mergeDefined<T extends Record<string, any>>(base: T | null, patch: DeepPartial<T>): T {
-  if (base == null) return (patch as T);
+export function mergeDefined<T extends Record<string, any>>(
+  base: T | null,
+  patch: DeepPartial<T>,
+): T {
+  if (base == null) return patch as T;
   return mergeDeep(base, patch);
 }
 
-export function updateAtPath<T extends object>(state: T, path: string, value: any): T {
+export function updateAtPath<T extends object>(
+  state: T,
+  path: string,
+  value: any,
+): T {
   const keys = path.split(".").filter(Boolean);
   if (!keys.length) return state;
-  const clone: any = Array.isArray(state) ? [...(state as any)] : { ...(state as any) };
+  const clone: any = Array.isArray(state)
+    ? [...(state as any)]
+    : { ...(state as any) };
   let cur: any = clone;
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i]!;
@@ -212,7 +258,10 @@ export function updateAtPath<T extends object>(state: T, path: string, value: an
   return clone;
 }
 
-export function select<T extends object, R = unknown>(state: T, path: string): R | undefined {
+export function select<T extends object, R = unknown>(
+  state: T,
+  path: string,
+): R | undefined {
   const keys = path.split(".").filter(Boolean);
   let cur: any = state;
   for (const k of keys) {
@@ -254,7 +303,10 @@ function boolU(v: any): boolean | undefined {
 function emptyToUndef(s?: string): string | undefined {
   return s && s.trim().length ? s : undefined;
 }
-function findLightMode(list: any[], node: string): Lights[keyof Lights] | undefined {
+function findLightMode(
+  list: any[],
+  node: string,
+): Lights[keyof Lights] | undefined {
   const hit = list.find((x) => x?.node === node);
   const m = hit?.mode;
   if (!m) return undefined;
@@ -269,7 +321,7 @@ function parseNozzleDiameterU(v: any): number | string | undefined {
   if (v == null || v === "") return undefined;
   const n = Number(v);
   return Number.isFinite(n) ? n : String(v);
-} 
+}
 function parseProgressPct(p: any): number | undefined {
   if (p == null || p === "") return undefined;
   const s = String(p);
