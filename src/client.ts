@@ -25,7 +25,7 @@ export class BambuLink extends EventEmitter implements Commands {
    * Creates an instance of the BambuLink class.
    * @param accessToken The access token for authentication.
    * @param host The host address of the printer.
-   * @param sequenceStart The start sequence number for the connection. Defaults to 0. Usefull if multiple clients are connected.
+   * @param sequenceStart The start sequence number for the connection. Defaults to 0. Useful if multiple clients are connected.
    * @param port The port number for the connection. Defaults to 8883.
    * @param serial The serial number of the printer.
    */
