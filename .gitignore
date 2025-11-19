@@ -1,2 +1,16 @@
-node_modules
+/node_modules
+package-lock.json
+
+# Ignore test-related files
+/coverage.data
+/coverage/
+
+# Build files
+/dist
+
+#env
 .env
+.env.local
+
+# npm lock file (project uses pnpm)
+package-lock.json

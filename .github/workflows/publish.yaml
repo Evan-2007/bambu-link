@@ -1,35 +1,32 @@
 name: Build and Publish
 
 on:
-  push:
-    branches:
-      - main # or your default branch
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   build-and-publish:
-    
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: 'install pnpm'
+      - name: "install pnpm"
         run: npm install -g pnpm
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16' # or the version you're using
-          registry-url: 'https://registry.npmjs.org/'
+          node-version: "16" # or the version you're using
+          registry-url: "https://registry.npmjs.org/"
 
       - name: Install dependencies with pnpm
         run: pnpm install
-        working-directory: ./bambu-link
 
       - name: Build with tsup
         run: pnpm exec tsup
-        working-directory: ./bambu-link
 
       - name: Publish to npm
         run: pnpm publish --access public
-        working-directory: ./bambu-link
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
