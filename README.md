@@ -104,8 +104,120 @@ The `PrinterState` object includes:
 
 ## Sending Commands
 
-<!-- TODO: Document command API once implemented -->
-TODO
+All command methods return a Promise that resolves when the command is acknowledged by the printer.
+
+### Print Control
+
+#### `stopPrint()`
+Stops the current print job.
+```javascript
+await client.stopPrint();
+```
+
+#### `pausePrint()`
+Pauses the current print job.
+```javascript
+await client.pausePrint();
+```
+
+#### `resumePrint()`
+Resumes a paused print job.
+```javascript
+await client.resumePrint();
+```
+
+#### `printSpeedSet(speedPct)`
+Sets the print speed level.
+- `speedPct`: `1` = silent, `2` = standard, `3` = sport, `4` = ludicrous
+```javascript
+await client.printSpeedSet(2); // Set to standard speed
+```
+
+#### `printGcode_file(fileName)`
+Starts printing a gcode file from the printer's storage.
+- `fileName`: Absolute path to the gcode file on the printer
+```javascript
+await client.printGcode_file('/path/to/file.gcode');
+```
+
+#### `printGcode(gcode)`
+Sends raw gcode commands directly to the printer. more info on gcode commands can be found in [this repository](https://github.com/Doridian/OpenBambuAPI/blob/main/gcode.md)
+- `gcode`: Gcode string to execute
+```javascript
+await client.printGcode('G28\n'); // Home all axes
+```
+
+### `home()`
+Sends home command to the printer
+```javascript
+await client.home();
+```
+
+### Maintenance & Calibration
+
+#### `calibration()`
+Starts the printer calibration routine.
+```javascript
+await client.calibration();
+```
+
+#### `unloadFilament()`
+Initiates the filament unload process.
+```javascript
+await client.unloadFilament();
+```
+
+#### `refreshState()`
+Manually requests a full state update from the printer. Note: This should rarely be needed as the printer pushes updates automatically. Calling too frequently can cause lag on P1S models.
+```javascript
+client.refreshState();
+```
+
+### Hardware Control
+
+#### `setFanSpeed(speed, fan)`
+Sets the speed of a specific fan.
+- `speed`: Fan speed (0-255)
+- `fan`: Fan identifier (`'AUX'`, `'CHAMBER'`, or `'PART'`)
+```javascript
+await client.setFanSpeed(128, 'PART'); // Set part cooling fan to 50%
+await client.setFanSpeed(0, 'CHAMBER'); // Turn off chamber fan
+```
+
+#### `move(axis, distance, feedrate)`
+Moves the specified axis by the given distance.
+⚠️ **WARNING**: This command could bypass endstops. Use with caution.
+- `axis`: Axis to move (`'X'`, `'Y'`, or `'Z'`)
+- `distance`: Distance to move in millimeters
+- `feedrate`: Movement speed in mm/min (default: 9000)
+```javascript
+await client.move('Z', 10, 3000); // Move Z axis up 10mm at 3000mm/min
+```
+
+#### `ledSet(mode, node, flashing)`
+Controls the printer LED lights.
+- `mode`: `'off'`, `'on'`, or `'flashing'`
+- `node`: Light to control (`'chamber_light'` or `'work_light'`)
+- `flashing`: Optional flashing parameters (only used when mode is `'flashing'`)
+  - `led_on_time`: Duration in ms (default: 500)
+  - `led_off_time`: Duration in ms (default: 500)
+  - `loop_times`: Number of flash cycles (default: 1)
+  - `interval`: Interval between cycles in ms (default: 1000)
+```javascript
+// Turn on chamber light
+await client.ledSet('on', 'chamber_light');
+
+// Flash work light 3 times
+await client.ledSet('flashing', 'work_light', {
+    led_on_time: 200,
+    led_off_time: 200,
+    loop_times: 3,
+    interval: 500
+});
+
+// Turn off chamber light
+await client.ledSet('off', 'chamber_light');
+```
 
 ## Example
 
