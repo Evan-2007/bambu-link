@@ -22,6 +22,11 @@ declare const module: any;
         client.connect();
         client.on('connect', () => {
           console.log('Connected to printer via MQTT');
+          client.setFanSpeed(0, 'AUX').then(() => {
+            console.log('Set AUX fan speed to 200');
+          }).catch((err) => {
+            console.error('Error setting fan speed:', err);
+          });
         });
 
         client.on('error', (err) => {
@@ -34,7 +39,7 @@ declare const module: any;
         });
 
         client.on('stateUpdate', (state) => {
-          console.log('State updated:', state);
+          //console.log('State updated:', state);
         });
 
         client.on('state', (state) => {

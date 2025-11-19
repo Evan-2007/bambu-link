@@ -107,35 +107,25 @@ export class MqttStreamClient extends EventEmitter {
     }
 
     // Check if it's a command response
-    if (message.print?.upgrade_state?.sequence_id <= this.sequenceCounter) {
       //console.log(message.print.upgrade_state);
+      
       this.handleCommandResponse(message);
-    }
-    else {
-      /**
-       * Emits a 'data' event.
-       * @event data
-       * @type {object}
-       * @property {string} topic - The topic the data came from.
-       * @property {any} message - The parsed JSON message.
-       */
-      this.emit('data', { topic, message });
-    }
+
   }
 
   /**
    * Handles messages on the response topic.
    */
   private handleCommandResponse(response: any): void {
-    console.log(this.pendingCommands)
-    const seq = response.print?.upgrade_state?.sequence_id;
+    //console.log(this.pendingCommands)
+    const seq = response.print?.sequence_id ?? response.system?.sequence_id;
 
     if (seq && this.pendingCommands.has(seq)) {
       const resolver = this.pendingCommands.get(seq);
       resolver?.(response); 
       this.pendingCommands.delete(seq);
     } else {
-      console.warn(`Received response with unknown sequence: ${seq}`);
+      //console.warn(`Received response with unknown sequence: ${seq}`);
       // emit response as a normal data message
       this.emit('data', { topic: this.dataUpdateTopic, message: response });
     }

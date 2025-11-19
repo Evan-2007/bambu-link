@@ -11,7 +11,7 @@ import {
 } from "./state";
 import { PrinterState } from "./types/printerState";
 import { version } from "os";
-import { no } from "zod/v4/locales";
+import { en, no } from "zod/v4/locales";
 
 export class BambuLink extends EventEmitter implements Commands {
   private accessToken: string
@@ -118,8 +118,150 @@ export class BambuLink extends EventEmitter implements Commands {
     return this.mqttClient;
   }
 
+  public refreshState(): void {
+    // Should not be needed, as we get pushed updates. Calling to much can cause lag on p1s.
+    this.initialMessage();
+  }
 
-}
+
+  private sendPrintCommand(command: string, param: any = ''): Promise<any> {
+    const sequenceId = ++this.sequenceIdCounter;
+
+    const payload = {
+      print: {
+        sequence_id: sequenceId,
+        command: command,
+        param: param,
+      }
+    };
+
+    const commandJson = JSON.stringify(payload);
+    
+    return this.mqttClient!.sendCommand(commandJson, sequenceId, true);
+  }
+
+    public stopPrint(): Promise<any> {
+      return this.sendPrintCommand("stop");
+    }
+
+    public pausePrint(): Promise<any> {
+      return this.sendPrintCommand("pause");
+    }
+
+    public resumePrint(): Promise<any> {
+      return this.sendPrintCommand("resume");
+    }
+
+    /**
+     * Sets the print speed percentage.
+     * @param speedPct 1 = silent, 2 = standard, 3 = sport, 4 = ludicrous
+     * @returns A Promise that resolves with the response or rejects on timeout.
+     */
+    public printSpeedSet(speedPct: 1 | 2 | 3 | 4): Promise<any> {
+      return this.sendPrintCommand("speed", speedPct);
+    }
+
+    /**
+     * selects gcode file to print
+     * @param fileName The name of the gcode file on the printer storage. Absolute path.
+     * @returns A Promise that resolves with the response or rejects on timeout.
+     */
+    public printGcode_file(fileName: string): Promise<any> {
+      return this.sendPrintCommand("gcode_file", fileName);
+    }
+
+    /** * sends raw gcode to printer
+     * @param gcode The gcode string to send to the printer.
+     * @returns A Promise that resolves with the response or rejects on timeout.
+     */
+    public printGcode(gcode: string): Promise<any> {
+      return this.sendPrintCommand("gcode_line", gcode);
+    }
+
+    public calibration(): Promise<any> {
+      return this.sendPrintCommand("calibration");
+    }
+
+    public unloadFilament(): Promise<any> {
+      return this.sendPrintCommand("unload_filament");
+    }
+
+    // public setTemperature(tool: 'BED' | 'EXTRUDER', temperature: number): Promise<any> {
+    //     enum Tool {
+    //       BED = 140,
+    //       EXTRUDER = 104,
+    //     }
+    //   return this.printGcode(`M${Tool[tool]} S${temperature} \n`);
+    // }
+    // public home(): Promise<any> {
+    //   return this.printGcode("G28\n");
+    // }
+
+    public setFanSpeed(speed: number, fan: 'AUX' | 'CHAMBER' | 'PART'): Promise<any> {
+      if (speed < 0 || speed > 255) {
+        return Promise.reject(new Error("Fan speed must be between 0 and 255."));
+      }
+      enum Fan {
+        AUX = 2,
+        CHAMBER = 3,
+        PART = 1,
+      }
+      return this.printGcode(`M106 P${Fan[fan]} S${speed}\n`);
+    }
+
+    /**
+     * Moves the specified axis by the given distance.
+     * WARNING: This command could bypasse endstops.
+     * @param axis 'X', 'Y', or 'Z'
+     * @param distance Distance to move in millimeters.
+     * @param feedrate Feedrate in mm/min. Default is 9000.
+     * @returns A Promise that resolves with the response or rejects on timeout.
+     */
+    public move(axis: 'X' | 'Y' | 'Z', distance: number, feedrate: number = 9000): Promise<any> {
+      // if (this.state && axis === 'E' && this.state.temps.nozzle < 180) {
+      //   console.warn(new Error("Extruder should be heated to >180C before moving E axis."));
+      // }
+      // if (!this.state && axis === 'E') {
+      //   console.warn('Make sure extruder is heated to >180C before moving E axis.');
+      // }
+      return this.printGcode(`M211 S ; save soft endstop flag\nM211 X1 Y1 Z1 ; turn on soft endstop\nM1002 push_ref_mode\nG91\nG1 ${axis}${distance} F${feedrate}\nM1002 pop_ref_mode\nM211 R ; restore soft endstop flag\n`);
+    }
+
+
+
+    /**
+     * Sets the LED mode.
+     * @param mode "off", "on", or "flashing"
+     * @param node 'chamber_light' | 'work_light'
+     * @param flashing Flashing parameters if mode is "flashing"
+     * @returns A Promise that resolves with the response or rejects on timeout.
+     */
+    public ledSet(mode: "off" | "on" | "flashing", node: 'chamber_light' | 'work_light', flashing: { led_on_time: number, led_off_time: number, loop_times: number, interval: number } = { led_on_time: 500, led_off_time: 500, loop_times: 1, interval: 1000 }): Promise<any> {
+      const sequenceId = ++this.sequenceIdCounter;
+
+      const payload = {
+        system: {
+          sequence_id: sequenceId,
+          command: "ledctrl",
+          led_node: node,
+          led_mode: mode,
+          led_on_time: flashing.led_on_time,
+          led_off_time: flashing.led_off_time,
+          loop_times: flashing.loop_times,
+          interval: flashing.interval,
+        }
+      };
+
+      const commandJson = JSON.stringify(payload);
+      
+      return this.mqttClient!.sendCommand(commandJson, sequenceId, true);
+    }
+
+    public home(): Promise<any> { 
+      return this.printGcode("G28\n");
+    }
+
+  }
 
 function diffMinimal<T>(oldVal: any, newVal: any): DeepPartial<T> | null {
   if (oldVal === newVal) return null;
