@@ -11,3 +11,6 @@ package-lock.json
 #env
 .env
 .env.local
+
+# npm lock file (project uses pnpm)
+package-lock.json

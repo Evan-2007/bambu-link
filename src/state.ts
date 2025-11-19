@@ -22,11 +22,13 @@ const zStr = z.preprocess(
   z.string().optional(),
 );
 
-const RawSchema = z.object({
-  command: zStr,
-  sequence_id: z.union([zStr, zNum]).optional(),
-  print: z.any().optional(),
-}).passthrough();
+const RawSchema = z
+  .object({
+    command: zStr,
+    sequence_id: z.union([zStr, zNum]).optional(),
+    print: z.any().optional(),
+  })
+  .passthrough();
 
 export function normalizeRawStatus(input: unknown): PrinterState {
   const raw = RawSchema.safeParse(input);
@@ -310,7 +312,7 @@ function findLightMode(
   const hit = list.find((x) => x?.node === node);
   const m = hit?.mode;
   if (!m) return undefined;
-  return m === "on" || m === "off" || "flashing" ? (m as any) : undefined;
+  return m === "on" || m === "off" || m === "flashing" ? (m as any) : undefined;
 }
 function parseDbmU(s: string | null | undefined): number | undefined {
   if (!s) return undefined;
