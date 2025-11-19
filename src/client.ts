@@ -10,7 +10,6 @@ import {
   DeepPartial
 } from "./state";
 import { PrinterState } from "./types/printerState";
-import { version } from "os";
 export class BambuLink extends EventEmitter implements Commands {
   private accessToken: string
   public sequenceNumber: number
