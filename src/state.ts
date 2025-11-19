@@ -22,13 +22,6 @@ const zStr = z.preprocess(
   z.string().optional(),
 );
 
-const zBool = z.preprocess((v) => {
-  if (typeof v === "boolean") return v;
-  if (v === "true") return true;
-  if (v === "false") return false;
-  return undefined;
-}, z.boolean().optional());
-
 const RawSchema = z
   .object({
     command: zStr,
