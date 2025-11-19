@@ -1,5 +1,4 @@
 import { Commands } from "./types/link";
-import { error } from "console";
 import {MqttStreamClient} from "./mqtt";
 import { EventEmitter } from 'events';
 import {
