@@ -1,11 +1,9 @@
-import { connect, MqttClient, IClientOptions } from 'mqtt';
-import { EventEmitter } from 'events';
-
+import { connect, MqttClient, IClientOptions } from "mqtt";
+import { EventEmitter } from "events";
 
 // Type for the 'resolve' function of a Promise,
 // which we will store to await a response.
 type PendingCommandResolver = (response: any) => void;
-
 
 /**
  * Manages an MQTT connection for data streaming and command-response cycles.
@@ -20,7 +18,6 @@ export class MqttStreamClient extends EventEmitter {
   private brokerUrl: string;
   private clientOptions: IClientOptions;
 
-
   private dataUpdateTopic: string;
 
   private sequenceCounter = 0;
@@ -31,7 +28,7 @@ export class MqttStreamClient extends EventEmitter {
     brokerUrl: string,
     dataUpdateTopic: string,
     options: IClientOptions = {},
-    commandTimeoutMs: number = 10000 // 10-second timeout
+    commandTimeoutMs: number = 10000, // 10-second timeout
   ) {
     super();
     this.brokerUrl = brokerUrl;
@@ -46,41 +43,42 @@ export class MqttStreamClient extends EventEmitter {
   public connect(): void {
     this.client = connect(this.brokerUrl, this.clientOptions);
 
-    this.client.on('error', (err) => {
-      this.emit('error', err);
+    this.client.on("error", (err) => {
+      this.emit("error", err);
     });
 
     // On successful connection
-    this.client.on('connect', () => {
+    this.client.on("connect", () => {
       console.log(`Connected to MQTT broker at ${this.brokerUrl}`);
 
       // Subscribe to the response topic
       this.client?.subscribe(this.dataUpdateTopic, (err) => {
         if (err) {
-          console.error('Failed to subscribe to response topic', err);
-          this.emit('error', new Error('Failed to subscribe to response topic'));
+          console.error("Failed to subscribe to response topic", err);
+          this.emit(
+            "error",
+            new Error("Failed to subscribe to response topic"),
+          );
         }
       });
 
-
       console.log(`Subscribed to topic: ${this.dataUpdateTopic}`);
-      this.emit('connect');
+      this.emit("connect");
     });
 
-
-    this.client.on('message', (topic, payload) => {
+    this.client.on("message", (topic, payload) => {
       this.handleMessage(topic, payload);
     });
 
     // Handle errors
-    this.client.on('error', (err) => {
-      console.error('MQTT Client Error:', err);
-      this.emit('error', err);
+    this.client.on("error", (err) => {
+      console.error("MQTT Client Error:", err);
+      this.emit("error", err);
     });
 
     // Handle disconnection
-    this.client.on('close', () => {
-      console.log('MQTT connection closed.');
+    this.client.on("close", () => {
+      console.log("MQTT connection closed.");
     });
   }
 
@@ -92,8 +90,8 @@ export class MqttStreamClient extends EventEmitter {
   }
 
   /**
-  * Routes incoming messages to the correct handler.
-  */
+   * Routes incoming messages to the correct handler.
+   */
   private handleMessage(topic: string, payload: Buffer): void {
     const messageStr = payload.toString();
     let message: any;
@@ -107,10 +105,9 @@ export class MqttStreamClient extends EventEmitter {
     }
 
     // Check if it's a command response
-      //console.log(message.print.upgrade_state);
-      
-      this.handleCommandResponse(message);
+    //console.log(message.print.upgrade_state);
 
+    this.handleCommandResponse(message);
   }
 
   /**
@@ -122,12 +119,12 @@ export class MqttStreamClient extends EventEmitter {
 
     if (seq && this.pendingCommands.has(seq)) {
       const resolver = this.pendingCommands.get(seq);
-      resolver?.(response); 
+      resolver?.(response);
       this.pendingCommands.delete(seq);
     } else {
       //console.warn(`Received response with unknown sequence: ${seq}`);
       // emit response as a normal data message
-      this.emit('data', { topic: this.dataUpdateTopic, message: response });
+      this.emit("data", { topic: this.dataUpdateTopic, message: response });
     }
   }
 
@@ -137,9 +134,13 @@ export class MqttStreamClient extends EventEmitter {
    * @param sequenceId The sequence ID for this command.
    * @returns A Promise that resolves with the response or rejects on timeout.
    */
-  public sendCommand(command: string, sequenceId: number, awaitResponse: boolean): Promise<any> {
+  public sendCommand(
+    command: string,
+    sequenceId: number,
+    awaitResponse: boolean,
+  ): Promise<any> {
     if (!this.client || !this.client.connected) {
-      return Promise.reject(new Error('MQTT client not connected.'));
+      return Promise.reject(new Error("MQTT client not connected."));
     }
     console.log(`Sending command: ${command} with sequence ID: ${sequenceId}`);
 
@@ -147,7 +148,7 @@ export class MqttStreamClient extends EventEmitter {
     if (!awaitResponse) {
       this.client.publish(this.dataUpdateTopic, command, (err) => {
         if (err) {
-          console.error('Failed to publish command:', err);
+          console.error("Failed to publish command:", err);
         }
       });
       return Promise.resolve(null);

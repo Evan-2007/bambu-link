@@ -1,8 +1,8 @@
 export type FanSpeeds = {
-  part?: number;       
-  chamber?: number;    
-  aux?: number;        
-  heatbreak?: number;  
+  part?: number;
+  chamber?: number;
+  aux?: number;
+  heatbreak?: number;
 };
 
 export type Temperatures = {
@@ -19,10 +19,10 @@ export type Lights = {
 };
 
 export type Ipcam = {
-  enabled: boolean;                 
+  enabled: boolean;
   record: "enable" | "disable";
   timelapse: "enable" | "disable";
-  resolution?: string;              
+  resolution?: string;
   tutkServer?: "enable" | "disable";
   modeBits?: number | null;
 };
@@ -37,21 +37,21 @@ export type Upgrade = {
 };
 
 export type AmsTray = {
-  id: number;                   
-  type?: string;                
-  colorHex?: string;            
+  id: number;
+  type?: string;
+  colorHex?: string;
   nozzleTempMin?: number | null;
   nozzleTempMax?: number | null;
   bedTemp?: number | null;
-  external?: boolean;           
-  remain?: number | null;       
-  infoIdx?: string | null;      
+  external?: boolean;
+  remain?: number | null;
+  infoIdx?: string | null;
 };
 
 export type AmsState = {
-  trays: Record<number, AmsTray>; 
-  trayNow?: number | null;        
-  trayPre?: number | null;        
+  trays: Record<number, AmsTray>;
+  trayNow?: number | null;
+  trayPre?: number | null;
   existBits?: string | null;
   isBblBits?: string | null;
   version?: number | null;
@@ -63,14 +63,14 @@ export type NetworkInfo = {
 };
 
 export type PrinterState = {
-  raw?: unknown;                 
-  timestamp: number;             
+  raw?: unknown;
+  timestamp: number;
   command?: string;
   sequenceId?: string | number;
 
   lifecycle?: string;
-  printType?: string;            
-  gcodeState?: string;           
+  printType?: string;
+  gcodeState?: string;
   job?: {
     stage?: string | number;
     subStage?: number;
@@ -85,7 +85,7 @@ export type PrinterState = {
   ipcam?: Ipcam;
   upgrade?: Upgrade;
   ams?: AmsState;
-  vtTray?: AmsTray;              
+  vtTray?: AmsTray;
   online?: { ahb?: boolean; rfid?: boolean; version?: number | string };
   wifiSignalDbm?: number | null;
   homeFlag?: number | null;
