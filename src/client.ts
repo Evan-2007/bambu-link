@@ -11,8 +11,6 @@ import {
 } from "./state";
 import { PrinterState } from "./types/printerState";
 import { version } from "os";
-import { en, no } from "zod/v4/locales";
-
 export class BambuLink extends EventEmitter implements Commands {
   private accessToken: string
   public sequenceNumber: number
