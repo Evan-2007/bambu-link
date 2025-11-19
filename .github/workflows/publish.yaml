@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-and-publish:
     
@@ -21,14 +25,9 @@ jobs:
 
       - name: Install dependencies with pnpm
         run: pnpm install
-        working-directory: ./bambu-link
 
       - name: Build with tsup
         run: pnpm exec tsup
-        working-directory: ./bambu-link
 
       - name: Publish to npm
         run: pnpm publish --access public
-        working-directory: ./bambu-link
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
