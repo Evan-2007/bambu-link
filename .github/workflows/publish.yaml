@@ -28,5 +28,8 @@ jobs:
       - name: Build with tsup
         run: pnpm exec tsup
 
+      - name: Update npm for OIDC support
+        run: npm install -g npm@latest
+
       - name: Publish to npm
         run: pnpm publish --access public --no-git-checks
