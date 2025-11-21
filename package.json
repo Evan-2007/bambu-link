@@ -33,7 +33,7 @@
     "tsup": "^8.0.2",
     "typescript": "^5.4.2",
     "dotenv": "^17.2.3",
-    "prettier": "^3.2.5",
+    "prettier": "^3.2.5"
   },
   "dependencies": {
     "mqtt": "^5.5.0",
