@@ -3,10 +3,8 @@ name: Build and Publish
 on:
   release:
     types: [published]
-  push:
-    branches:
-      - main
 
+  
 permissions:
   contents: read
   id-token: write
