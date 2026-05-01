@@ -48,7 +48,7 @@ export class BambuLink extends EventEmitter implements Commands {
       {
         username: "bblp",
         password: this.accessToken,
-        reconnectPeriod: 1,
+        reconnectPeriod: 5000,
         rejectUnauthorized: false,
       },
     );
