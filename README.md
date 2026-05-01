@@ -38,6 +38,19 @@ const client = new BambuLink(
 );
 ```
 
+Optionally pass additional MQTT options as a sixth argument:
+
+```javascript
+const client = new BambuLink(
+  accessToken,
+  host,
+  0,
+  8883,
+  serial,
+  { reconnectPeriod: 10000 }, // reconnect every 10 seconds
+);
+```
+
 Connect to the printer:
 
 ```javascript
@@ -324,7 +337,42 @@ client.connect();
 ### Constructor
 
 ```javascript
-new BambuLink(accessToken, host, sequenceStart, port, serial);
+new BambuLink(accessToken, host, sequenceStart, port, serial, mqttOptions?);
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `accessToken` | `string` | — | Access token from printer network settings |
+| `host` | `string` | — | IP address of the printer |
+| `sequenceStart` | `number` | `0` | Starting sequence number. Increment when running multiple clients |
+| `port` | `number` | `8883` | MQTT port |
+| `serial` | `string` | — | Printer serial number |
+| `mqttOptions` | `IClientOptions` | `{}` | Additional [mqtt.js client options](https://github.com/mqttjs/MQTT.js#client) merged into the connection config. `username` and `password` are always derived from `accessToken` and cannot be overridden. |
+
+#### MQTT Options
+
+The `mqttOptions` parameter accepts any [mqtt.js `IClientOptions`](https://github.com/mqttjs/MQTT.js#client) except `username` and `password`. Useful options include:
+
+| Option | Default | Description |
+|---|---|---|
+| `reconnectPeriod` | `5000` | Milliseconds between reconnect attempts. Set to `0` to disable auto-reconnect |
+| `connectTimeout` | `30000` | Milliseconds to wait before a connect times out |
+| `rejectUnauthorized` | `false` | Whether to reject self-signed TLS certificates. Bambu printers use self-signed certs so this defaults to `false` |
+| `keepalive` | `60` | Seconds between keepalive pings |
+
+```javascript
+const client = new BambuLink(
+  accessToken,
+  host,
+  0,
+  8883,
+  serial,
+  {
+    reconnectPeriod: 10000, // retry every 10 seconds
+    connectTimeout: 15000,  // fail faster on unreachable host
+    keepalive: 30,
+  },
+);
 ```
 
 ### Methods

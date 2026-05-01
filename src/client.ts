@@ -1,5 +1,6 @@
 import { Commands } from "./types/link";
 import { MqttStreamClient } from "./mqtt";
+import { IClientOptions } from "mqtt";
 import { EventEmitter } from "events";
 import { normalizeRawStatus, DeepPartial } from "./state";
 import { PrinterState } from "./types/printerState";
@@ -24,6 +25,7 @@ export class BambuLink extends EventEmitter implements Commands {
    * @param sequenceStart The start sequence number for the connection. Defaults to 0. Useful if multiple clients are connected.
    * @param port The port number for the connection. Defaults to 8883.
    * @param serial The serial number of the printer.
+   * @param mqttOptions Additional mqtt.js IClientOptions to merge into the connection config. `username` and `password` are always set from `accessToken` and cannot be overridden.
    */
 
   constructor(
@@ -32,6 +34,7 @@ export class BambuLink extends EventEmitter implements Commands {
     sequenceStart: number = 0,
     port: number = 8883,
     serial: string,
+    mqttOptions: Omit<IClientOptions, "username" | "password"> = {},
   ) {
     super();
     this.accessToken = accessToken;
@@ -46,10 +49,11 @@ export class BambuLink extends EventEmitter implements Commands {
       `mqtts://${this.host}:${this.port}`,
       `device/${this.serial}/report`,
       {
-        username: "bblp",
-        password: this.accessToken,
         reconnectPeriod: 5000,
         rejectUnauthorized: false,
+        ...mqttOptions,
+        username: "bblp",
+        password: this.accessToken,
       },
     );
     this.setupEventForwarding();
