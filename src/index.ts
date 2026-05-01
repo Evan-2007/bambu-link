@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export { BambuLink } from "./client";
+export { PrinterState } from "./types/printerState";
 
 // For direct execution (e.g., for testing)
 declare const require: any;
