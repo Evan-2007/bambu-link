@@ -26,17 +26,17 @@ if (typeof require !== "undefined" && require.main === module) {
       process.env.serial!,
     );
     client.connect();
-    client.on("connect", () => {
-      console.log("Connected to printer via MQTT");
-      client
-        .setFanSpeed(0, "AUX")
-        .then(() => {
-          console.log("Set AUX fan speed to 200");
-        })
-        .catch((err) => {
-          console.error("Error setting fan speed:", err);
-        });
-    });
+    // client.on("connect", () => {
+    //   console.log("Connected to printer via MQTT");
+    //   client
+    //     .setFanSpeed(0, "AUX")
+    //     .then(() => {
+    //       console.log("Set AUX fan speed to 200");
+    //     })
+    //     .catch((err) => {
+    //       console.error("Error setting fan speed:", err);
+    //     });
+    // });
 
     client.on("error", (err) => {
       console.error("Error:", err);
